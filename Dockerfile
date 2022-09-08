@@ -1,39 +1,13 @@
-# All environments will be Ubuntu-based (Ubuntu 22.04)
-FROM buildpack-deps:jammy
+# All environments needs to inherit from "workspace-base"
+FROM yolosh/workspace-base:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # RUN will use bash
 SHELL ["/bin/bash", "-c"]
 
-# We want a "standard Ubuntu"
-# (ie: not one that has been minimized
-# by removing packages and content
-# not required in a production system)
-RUN yes | unminimize
-
-# Install system dependencies
-RUN set -euo pipefail \
-  && apt-get --assume-yes --quiet --quiet update \
-  && apt-get --assume-yes --quiet --quiet install \
-    apt-transport-https \
-    build-essential \
-    ca-certificates \
-    curl \
-    git \
-    gnupg \
-    locales \
-    lsb-release \
-    man-db \
-    manpages-posix \
-    nano \
-    software-properties-common \
-    sudo \
-    tzdata \
-    unzip \
-    vim \
-    wget \
-  && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
+# Run the following commands as root
+USER root
 
 # Force LibSSL to 1.1.1 to avoid conflicts 
 # with old Ruby and Python versions
@@ -47,28 +21,6 @@ RUN set -euo pipefail \
     echo 'Pin-Priority: 900'; } >> /etc/apt/preferences.d/rael-gc-rvm-precise-pin-900 \
   && apt-get --assume-yes --quiet --quiet install libssl-dev \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
-
-# Set default timezone
-ENV TZ=America/Los_Angeles
-
-# Set default locale.
-# /!\ locale-gen must be run as root.
-RUN set -euo pipefail \
-  && locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
-
-# Install entrypoint script
-COPY ./yolo_entrypoint.sh /
-RUN set -euo pipefail \
-  && chmod +x /yolo_entrypoint.sh
-
-# Only for documentation purpose.
-# Entrypoint and CMD are always set by the 
-# Yolo agent when running the container.
-ENTRYPOINT ["/yolo_entrypoint.sh"]
-CMD ["sleep", "infinity"]
 
 # Install the Docker CLI. 
 # The Docker daemon socket will be mounted from instance.
@@ -84,6 +36,12 @@ RUN set -euo pipefail \
   && LATEST_COMPOSE_VERSION=$(curl --fail --silent --show-error --location "https://api.github.com/repos/docker/compose/releases/latest" | grep --only-matching --perl-regexp '(?<="tag_name": ").+(?=")') \
   && curl --fail --silent --show-error --location "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE_VERSION}/docker-compose-$(uname --kernel-name)-$(uname --machine)" --output /usr/libexec/docker/cli-plugins/docker-compose \
   && chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+
+# Add default user to docker group to avoid 
+# having to run all docker commands with sudo
+RUN set -euo pipefail \
+  && groupadd --gid 10001 --non-unique docker \
+  && usermod --append --groups docker "${USER}"
 
 # Install PHP
 RUN set -euo pipefail \
@@ -139,66 +97,10 @@ RUN set -euo pipefail \
   && curl --silent --show-error --location --fail https://apache.osuosl.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     | tar --extract --gzip --verbose --directory $MAVEN_HOME --strip-components=1
 
-# Configure the user "yolo" in container.
-# Triggered during build on instance.
-# 
-# We want the user "yolo" inside the container to get 
-# the same permissions than the user "yolo" in the instance 
-# (to access the Docker daemon, SSH keys and so on).
-# 
-# To do this, the two users need to share the same UID/GID.
-RUN set -euo pipefail \
-  && YOLO_USER_HOME_DIR="/home/yolo" \
-  && YOLO_USER_WORKSPACE_DIR="${YOLO_USER_HOME_DIR}/workspace" \
-  && YOLO_USER_WORKSPACE_CONFIG_DIR="${YOLO_USER_HOME_DIR}/.workspace-config" \
-  && groupadd --gid 10000 --non-unique yolo \
-  && useradd --gid 10000 --uid 10000 --non-unique --home "${YOLO_USER_HOME_DIR}" --create-home --shell /bin/bash yolo \
-  && cp /etc/sudoers /etc/sudoers.orig \
-  && echo "yolo ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/yolo > /dev/null \
-  && groupadd --gid 10001 --non-unique docker \
-  && usermod --append --groups docker yolo \
-  && mkdir --parents "${YOLO_USER_WORKSPACE_CONFIG_DIR}" \
-  && mkdir --parents "${YOLO_USER_WORKSPACE_DIR}" \
-  && mkdir --parents "${YOLO_USER_HOME_DIR}/.ssh" \
-  && mkdir --parents "${YOLO_USER_HOME_DIR}/.gnupg" \
-  && mkdir --parents "${YOLO_USER_HOME_DIR}/.vscode-server" \
-  && chown --recursive yolo:yolo "${YOLO_USER_HOME_DIR}" \
-  && chmod 700 "${YOLO_USER_HOME_DIR}/.gnupg"
-
-ENV USER=yolo
-ENV HOME=/home/yolo
-ENV EDITOR=/usr/bin/nano
-
-ENV YOLO_WORKSPACE=/home/yolo/workspace
-ENV YOLO_WORKSPACE_CONFIG=/home/yolo/.workspace-config
-
-USER yolo
+# Run the following commands 
+# using default user
+USER $USER
 WORKDIR $HOME
-
-# Install ZSH
-RUN set -euo pipefail \
-  && sudo apt-get --assume-yes --quiet --quiet update \
-  && sudo apt-get --assume-yes --quiet --quiet install zsh \
-  && sudo apt-get clean && sudo rm --recursive --force /var/lib/apt/lists/* /tmp/* \
-  && mkdir .zfunc
-
-# Install OhMyZSH and some plugins
-RUN set -euo pipefail \
-  && sh -c "$(curl --fail --silent --show-error --location https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
-  && git clone --quiet https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
-  && git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-# Change default shell for user "yolo"
-RUN set -euo pipefail \
-  && sudo usermod --shell $(which zsh) yolo
-
-# Add a command "code" to ZSH.
-# This command lets you open a file in VSCode 
-# while being connected to an environment via SSH.
-COPY --chown=yolo:yolo ./zsh/code_fn.zsh .zfunc/code
-
-# Add .zshrc to home folder
-COPY --chown=yolo:yolo ./zsh/.zshrc .
 
 # Install Node.js.
 # Nvm uses the "NODE_VERSION" env var to 
@@ -283,4 +185,4 @@ RUN set -euo pipefail \
   && go install honnef.co/go/tools/cmd/staticcheck@latest \
   && go install golang.org/x/tools/gopls@latest
 
-WORKDIR $YOLO_WORKSPACE
+WORKDIR $WORKSPACE
