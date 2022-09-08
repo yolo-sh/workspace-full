@@ -46,7 +46,7 @@ The following runtimes are installed in this image:
 
 ## Image
 
-The Dockerfile has been extensively commented to be self-explanatory. You can see it by yourself below:
+The Dockerfile has been extensively commented to be self-explanatory. You can see it below:
 
 ```Dockerfile
 # All environments needs to inherit from "workspace-base"
