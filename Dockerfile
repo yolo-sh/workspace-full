@@ -1,5 +1,7 @@
 # All environments needs to inherit from "workspace-base"
-FROM yolosh/workspace-base:latest
+FROM ghcr.io/yolo-sh/workspace-base:latest
+
+LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
 
 ARG DEBIAN_FRONTEND=noninteractive
 
