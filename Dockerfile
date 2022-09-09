@@ -1,4 +1,4 @@
-# All environments needs to inherit from "workspace-base"
+# All environments need to inherit from "workspace-base"
 FROM ghcr.io/yolo-sh/workspace-base:latest
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
