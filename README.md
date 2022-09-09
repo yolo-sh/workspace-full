@@ -2,7 +2,7 @@
 
 This repository contains the source code of the Docker image named `ghcr.io/yolo-sh/workspace-full`. 
 
-This image contains all the runtimes for the environments created via the [CLI](https://github.com/yolo-sh/cli).
+This image contains the runtimes for the environments created via the [CLI](https://github.com/yolo-sh/cli).
 
 ## Table of contents
 - [Requirements](#requirements)
@@ -49,7 +49,7 @@ The following runtimes are installed in this image:
 The Dockerfile has been extensively commented to be self-explanatory. You can see it below:
 
 ```Dockerfile
-# All environments needs to inherit from "workspace-base"
+# All environments need to inherit from "workspace-base"
 FROM ghcr.io/yolo-sh/workspace-base:latest
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
