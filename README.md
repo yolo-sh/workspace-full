@@ -103,21 +103,35 @@ RUN set -euo pipefail \
     composer \
     php \
     php-all-dev \
+    php-apcu \
     php-ctype \
     php-curl \
     php-date \
+    php-dom \
+    php-fpm \
     php-gd \
+    php-iconv \
+    php-imagick \
     php-intl \
     php-json \
+    php-intl \
+    php-fileinfo \
     php-mbstring \
     php-mysql \
     php-net-ftp \
+    php-opcache \
+    php-pdo \
     php-pgsql \
     php-php-gettext \
-    php-sqlite3 \
-    php-tokenizer \
+    php-posix \
+    php-mysqli \
     php-xml \
+    php-phar \
+    php-tokenizer \
+    php-simplexml \
+    php-sqlite3 \
     php-zip \
+    php-xmlwriter \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
 
 # Install Clang compiler (C/C++)
