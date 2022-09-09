@@ -2,6 +2,7 @@
 FROM ghcr.io/yolo-sh/workspace-base:latest
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
+LABEL org.opencontainers.image.description="Initial release"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -52,20 +53,33 @@ RUN set -euo pipefail \
     composer \
     php \
     php-all-dev \
+    php-apcu \
     php-ctype \
     php-curl \
     php-date \
+    php-dom \
+    php-fileinfo \
+    php-fpm \
     php-gd \
+    php-iconv \
+    php-imagick \
     php-intl \
     php-json \
     php-mbstring \
     php-mysql \
+    php-mysqli \
     php-net-ftp \
+    php-opcache \
+    php-pdo \
     php-pgsql \
+    php-phar \
     php-php-gettext \
+    php-posix \
+    php-simplexml \
     php-sqlite3 \
     php-tokenizer \
     php-xml \
+    php-xmlwriter \
     php-zip \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
 
