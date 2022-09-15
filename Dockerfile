@@ -25,8 +25,7 @@ RUN set -euo pipefail \
   && apt-get --assume-yes --quiet --quiet install libssl-dev \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
 
-# Install the Docker CLI. 
-# The Docker daemon socket will be mounted from instance.
+# Install Docker 
 RUN set -euo pipefail \
   && curl --fail --silent --show-error --location https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --output /usr/share/keyrings/docker-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release --codename --short) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
