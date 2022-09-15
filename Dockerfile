@@ -51,9 +51,9 @@ RUN set -euo pipefail \
   && apt-get --assume-yes --quiet --quiet update \
   && apt-get --assume-yes --quiet --quiet install \
     composer \
-    php \
     php-all-dev \
     php-apcu \
+    php-cli \
     php-ctype \
     php-curl \
     php-date \
