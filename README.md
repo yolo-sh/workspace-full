@@ -50,9 +50,10 @@ The Dockerfile has been extensively commented to be self-explanatory. You can se
 
 ```Dockerfile
 # All environments need to inherit from "workspace-base"
-FROM ghcr.io/yolo-sh/workspace-base:latest
+FROM ghcr.io/yolo-sh/workspace-base:0.0.2
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
+LABEL org.opencontainers.image.description="The Docker image that contains the runtimes for the environments created via the Yolo CLI"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -75,13 +76,12 @@ RUN set -euo pipefail \
   && apt-get --assume-yes --quiet --quiet install libssl-dev \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
 
-# Install the Docker CLI. 
-# The Docker daemon socket will be mounted from instance.
+# Install Docker
 RUN set -euo pipefail \
   && curl --fail --silent --show-error --location https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --output /usr/share/keyrings/docker-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release --codename --short) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
   && apt-get --assume-yes --quiet --quiet update \
-  && apt-get --assume-yes --quiet --quiet install docker-ce-cli \
+  && apt-get --assume-yes --quiet --quiet install docker-ce docker-ce-cli containerd.io \
   && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
 
 # Install Docker compose
@@ -93,7 +93,7 @@ RUN set -euo pipefail \
 # Add default user to docker group to avoid 
 # having to run all docker commands with sudo
 RUN set -euo pipefail \
-  && groupadd --gid 10001 --non-unique docker \
+  && groupadd --force docker \
   && usermod --append --groups docker "${USER}"
 
 # Install PHP
@@ -101,9 +101,9 @@ RUN set -euo pipefail \
   && apt-get --assume-yes --quiet --quiet update \
   && apt-get --assume-yes --quiet --quiet install \
     composer \
-    php \
     php-all-dev \
     php-apcu \
+    php-cli \
     php-ctype \
     php-curl \
     php-date \
@@ -237,7 +237,7 @@ RUN set -euo pipefail \
 ENV PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
 RUN set -euo pipefail \
   && cd /tmp \
-  && LATEST_GO_VERSION=$(curl --fail --silent --show-error --location "https://golang.org/VERSION?m=text") \
+  && LATEST_GO_VERSION=$(curl --fail --silent --show-error --location "https://go.dev/VERSION?m=text") \
   && ARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) \
   && curl --fail --silent --show-error --location "https://go.dev/dl/${LATEST_GO_VERSION}.linux-${ARCH}.tar.gz" --output go.tar.gz \
   && sudo tar --directory /usr/local --extract --file go.tar.gz \
@@ -251,7 +251,7 @@ RUN set -euo pipefail \
   && go install honnef.co/go/tools/cmd/staticcheck@latest \
   && go install golang.org/x/tools/gopls@latest
 
-WORKDIR $WORKSPACE
+WORKDIR $YOLO_WORKSPACE
 ```
 
 ## License
