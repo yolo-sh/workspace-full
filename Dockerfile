@@ -187,7 +187,7 @@ RUN set -euo pipefail \
 ENV PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
 RUN set -euo pipefail \
   && cd /tmp \
-  && LATEST_GO_VERSION=$(curl --fail --silent --show-error --location "https://golang.org/VERSION?m=text") \
+  && LATEST_GO_VERSION=$(curl --fail --silent --show-error --location "https://go.dev/VERSION?m=text") \
   && ARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) \
   && curl --fail --silent --show-error --location "https://go.dev/dl/${LATEST_GO_VERSION}.linux-${ARCH}.tar.gz" --output go.tar.gz \
   && sudo tar --directory /usr/local --extract --file go.tar.gz \
