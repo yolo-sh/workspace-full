@@ -1,5 +1,5 @@
 # All environments need to inherit from "workspace-base"
-FROM ghcr.io/yolo-sh/workspace-base:0.0.2
+FROM ghcr.io/yolo-sh/workspace-base:0.0.3
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
 LABEL org.opencontainers.image.description="The Docker image that contains the runtimes for the environments created via the Yolo CLI"
