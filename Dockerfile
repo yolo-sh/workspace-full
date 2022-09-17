@@ -1,5 +1,5 @@
 # All environments need to inherit from "workspace-base"
-FROM ghcr.io/yolo-sh/workspace-base:0.0.3
+FROM ghcr.io/yolo-sh/workspace-base:0.0.4-dev
 
 LABEL org.opencontainers.image.source=https://github.com/yolo-sh/workspace-full
 LABEL org.opencontainers.image.description="The Docker image that contains the runtimes for the environments created via the Yolo CLI"
@@ -23,7 +23,7 @@ RUN set -euo pipefail \
     echo 'Pin: release o=LP-PPA-rael-gc-rvm'; \
     echo 'Pin-Priority: 900'; } >> /etc/apt/preferences.d/rael-gc-rvm-precise-pin-900 \
   && apt-get --assume-yes --quiet --quiet install libssl-dev \
-  && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
+  && apt-get clean && rm --recursive --force /tmp/*
 
 # Install Docker 
 RUN set -euo pipefail \
@@ -31,7 +31,7 @@ RUN set -euo pipefail \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release --codename --short) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
   && apt-get --assume-yes --quiet --quiet update \
   && apt-get --assume-yes --quiet --quiet install docker-ce docker-ce-cli containerd.io \
-  && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
+  && apt-get clean && rm --recursive --force /tmp/*
 
 # Install Docker compose
 RUN set -euo pipefail \
@@ -80,7 +80,7 @@ RUN set -euo pipefail \
     php-xml \
     php-xmlwriter \
     php-zip \
-  && apt-get clean && rm --recursive --force /var/lib/apt/lists/* /tmp/*
+  && apt-get clean && rm --recursive --force /tmp/*
 
 # Install Clang compiler (C/C++)
 RUN set -euo pipefail \
@@ -92,7 +92,7 @@ RUN set -euo pipefail \
     cmake \
     clangd-14 \
   && update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-14 100 \
-  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+  && apt-get clean && rm --recursive --force /tmp/*
 
 # Install Java & Maven
 RUN set -euo pipefail \
@@ -102,7 +102,7 @@ RUN set -euo pipefail \
   && apt-get install --assume-yes --quiet --quiet \
       gradle \
       oracle-java17-installer \
-  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+  && apt-get clean && rm --recursive --force /tmp/*
 
 ARG MAVEN_VERSION=3.8.6
 ENV MAVEN_HOME=/usr/share/maven
@@ -149,7 +149,7 @@ RUN set -euo pipefail \
     tk-dev \
     xz-utils \
     zlib1g-dev \
-  && sudo apt-get clean && sudo rm --recursive --force /var/lib/apt/lists/* /tmp/*
+  && sudo apt-get clean && sudo rm --recursive --force /tmp/*
 RUN set -euo pipefail \
   && curl --silent --show-error --location --fail https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash \
   && { echo; \
