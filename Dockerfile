@@ -58,7 +58,6 @@ RUN set -euo pipefail \
     php-date \
     php-dom \
     php-fileinfo \
-    php-fpm \
     php-gd \
     php-iconv \
     php-imagick \
